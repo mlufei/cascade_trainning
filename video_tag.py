@@ -47,8 +47,8 @@ def imageTag(index, folder, frame, tags):
 	num = 0
 	for rect in tags:
 		cv2.rectangle(frame, (rect[0], rect[1]), (rect[0] + rect[2], rect[1] + rect[3]), color,5)
-		image = Image.fromarray(frame[rect[1]:(rect[1] + rect[3]), rect[0]:(rect[0] + rect[2])], 'RGB')
-		image.save("%s/%s-%s.jpg" % (folder, index, num))
+		image = frame[rect[1]:(rect[1] + rect[3]), rect[0]:(rect[0] + rect[2])]
+		cv2.imwrite("%s/%s-%s.jpg" % (folder, index, num), image)
 		num += 1
 
 def videoTag(videoIn, videoOut, tagList):
