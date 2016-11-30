@@ -68,26 +68,44 @@ def videoTag(videoIn, videoOut, tagList):
 		cv2.imshow('video', frame)
 		success, frame = videoCapture.read()
 
+def imageDetect(frame, faceCascade):
+	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+	return faceCascade.detectMultiScale(
+	    gray,
+	    scaleFactor=1.15,
+	    minNeighbors=5,
+	    minSize=(30, 30),
+	    flags = cv2.cv.CV_HAAR_SCALE_IMAGE
+	)
+
 def videoDetectTag(videoIn, videoOut, cascade, folder):
 	"""
 	get frames from video, and add some tags into the every frame, then save into the videoOut
 	"""
 	videoCapture = cv2.VideoCapture(videoIn)
-	fps = videoCapture.get(cv2.CAP_PROP_FPS)
-	size = (int(videoCapture.get(cv2.CAP_PROP_FRAME_WIDTH)),int(videoCapture.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+	fps = videoCapture.get(cv2.cv.CV_CAP_PROP_FPS)
+	size = (int(videoCapture.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)),int(videoCapture.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)))
+	print "fps: ", fps, ", size: (%s, %s)" % size
+	wait = int(1/fps * 1000/1)
 	videoWriter = cv2.VideoWriter(videoOut, cv2.cv.CV_FOURCC('M', 'J', 'P', 'G'), fps, size)
 	success, frame = videoCapture.read()
+	faceCascade = cv2.CascadeClassifier(cascade)
 	index = 0
+	tagList = {}
 	while success:
 		cv2.imshow('src', frame)
-		if(cv2.waitKey(0)==27):
+		if(cv2.waitKey(wait) & 0xFF == ord('q')):
 			cv2.destroyAllWindows()
 			break
-		index += 1
-		imageTag(frame, tagList[index])
+		tagList[index] = []
+		tags = imageDetect(frame, faceCascade)
+		imageTag(frame, tags)
 		videoWriter.write(frame)
 		cv2.imshow('dest', frame)
+		tagList[index].append(tags)
 		success, frame = videoCapture.read()
+		index += 1
+	return tagList
 
 if __name__ == "__main__":
 	parser = OptionParser(version = "v0.1")
@@ -100,9 +118,6 @@ if __name__ == "__main__":
 	if os.path.exists(options.src) == False:
 		print "can not find the ", options.src, " file(src)..."
 		sys.exit(-1)
-	if os.path.exists(options.dest) == False:
-		print "can not find the ", options.dest, " file(dest)..."
-		sys.exit(-1)
 	if os.path.exists(options.cascade) == False:
 		print "can not find the ", options.cascade, " file(cascade)..."
 		sys.exit(-1)
@@ -113,7 +128,7 @@ if __name__ == "__main__":
 		options.folder = IMAGE_DEFAULT_FOLDER
 	if not os.path.exists(options.folder):
 		os.makedirs(options.folder)
-	if os.path.exists(options.tag):
+	if not os.path.exists(options.cascade):
 		tagList = getTagList(options.tag)
 		videoTag(options.src, options.dest, tagList)
 	else:
