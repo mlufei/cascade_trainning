@@ -42,10 +42,14 @@ def getTagList(tagListFile):
 	tagFile.close()
 	return tagList
 
-def imageTag(frame, tags):
+def imageTag(index, folder, frame, tags):
 	color = (0,255,0)
+	num = 0
 	for rect in tags:
 		cv2.rectangle(frame, (rect[0], rect[1]), (rect[0] + rect[2], rect[1] + rect[3]), color,5)
+		image = Image.fromarray(frame[rect[1]:(rect[1] + rect[3]), rect[0]:(rect[0] + rect[2])], 'RGB')
+		image.save("%s/%s-%s.jpg" % (folder, index, num))
+		num += 1
 
 def videoTag(videoIn, videoOut, tagList):
 	"""
@@ -70,13 +74,14 @@ def videoTag(videoIn, videoOut, tagList):
 
 def imageDetect(frame, faceCascade):
 	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-	return faceCascade.detectMultiScale(
+	faces = faceCascade.detectMultiScale(
 	    gray,
 	    scaleFactor=1.15,
 	    minNeighbors=5,
 	    minSize=(30, 30),
 	    flags = cv2.cv.CV_HAAR_SCALE_IMAGE
 	)
+	return faces
 
 def videoDetectTag(videoIn, videoOut, cascade, folder):
 	"""
@@ -99,7 +104,7 @@ def videoDetectTag(videoIn, videoOut, cascade, folder):
 			break
 		tagList[index] = []
 		tags = imageDetect(frame, faceCascade)
-		imageTag(frame, tags)
+		imageTag(index, folder, frame, tags)
 		videoWriter.write(frame)
 		cv2.imshow('dest', frame)
 		tagList[index].append(tags)
