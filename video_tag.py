@@ -13,7 +13,7 @@ def saveTagList(tagList, destFile):
 	"""
 	tagFile = open(destFile, "w")
 	for key in tagList.keys():
-		tagFile.write("%s,%s" % (key, len(tagList[key])))
+		tagFile.write("%s" % (key))
 		for rect in tagList[key]:
 			tagFile.write(",%s-%s-%s-%s" % rect)
 		tagFile.write("\r\n")
@@ -33,11 +33,9 @@ def getTagList(tagListFile):
 	        if len(tags) <= 0:
 			continue
 	        tagList[int(tags[0])] = []
-	        length = int(tags[1])
-        	if length != (len(tags) - 2):
-			length = (len(tags) - 2)
+	        length = int(tags) - 1
         	for index in range(length):
-			rect = tags[index + 2].split("-")
+			rect = tags[index + 1].split("-")
 			if len(rect) < 4:
 				continue
 			tagList[int(tags[0])].append((int(rect[0]), int(rect[1]), int(rect[2]), int(rect[3])))
