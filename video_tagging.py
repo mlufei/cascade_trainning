@@ -86,6 +86,17 @@ def imageDetect(frame, faceCascade):
 	)
 	return faces
 
+def imageDetectWithSkinByRGB(frame, faceCascade):
+	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+	faces = faceCascade.detectMultiScale(
+	    gray,
+	    scaleFactor=1.15,
+	    minNeighbors=5,
+	    minSize=(50, 50),
+	    flags = cv2.cv.CV_HAAR_SCALE_IMAGE
+	)
+	return faces
+
 def videoDetectTag(videoIn, videoOut, cascade, folder):
 	"""
 	get frames from video, and add some tags into the every frame, then save into the videoOut
