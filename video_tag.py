@@ -15,14 +15,14 @@ def saveTagList(tagList, destFile):
 	for key in tagList.keys():
 		tagFile.write("%s" % (key))
 		for rect in tagList[key]:
-			tagFile.write(",%s-%s-%s-%s" % rect)
+			tagFile.write(",%s-%s-%s-%s" % (int(rect[0]), int(rect[1]), int(rect[2]), int(rect[3])))
 		tagFile.write("\r\n")
 	tagFile.close()
 
 def getTagList(tagListFile):
 	"""
 	parse the tag list from file
-	Rect: index, size, left, top, width, height,...
+	Rect: index,left-top-width-height,left-top-width-height,...
 	"""
 	tagFile = open(tagListFile)
 	tagList = {}
@@ -43,13 +43,16 @@ def getTagList(tagListFile):
 	return tagList
 
 def imageTag(index, folder, frame, tags):
-	color = (0,255,0)
+	color = (0, 255, 0)
 	num = 0
+	tagList = []
 	for rect in tags:
-		cv2.rectangle(frame, (rect[0], rect[1]), (rect[0] + rect[2], rect[1] + rect[3]), color,5)
 		image = frame[rect[1]:(rect[1] + rect[3]), rect[0]:(rect[0] + rect[2])]
-		cv2.imwrite("%s/%s-%s.jpg" % (folder, index, num), image)
+		cv2.imwrite("%s/%s_%s.jpg" % (folder, index, num), image)
+		cv2.rectangle(frame, (rect[0], rect[1]), (rect[0] + rect[2], rect[1] + rect[3]), color,5)
+		tagList.append(rect)
 		num += 1
+	return tagList
 
 def videoTag(videoIn, videoOut, tagList):
 	"""
@@ -62,14 +65,14 @@ def videoTag(videoIn, videoOut, tagList):
 	success, frame = videoCapture.read()
 	index = 0
 	while success:
-		cv2.imshow('video', frame)
+		#cv2.imshow('video', frame)
 		if(cv2.waitKey(0)==27):
 			cv2.destroyAllWindows()
 			break
 		index += 1
 		imageTag(frame, tagList[index])
 		videoWriter.write(frame)
-		cv2.imshow('video', frame)
+		#cv2.imshow('video', frame)
 		success, frame = videoCapture.read()
 
 def imageDetect(frame, faceCascade):
@@ -78,7 +81,7 @@ def imageDetect(frame, faceCascade):
 	    gray,
 	    scaleFactor=1.15,
 	    minNeighbors=5,
-	    minSize=(30, 30),
+	    minSize=(50, 50),
 	    flags = cv2.cv.CV_HAAR_SCALE_IMAGE
 	)
 	return faces
@@ -98,16 +101,17 @@ def videoDetectTag(videoIn, videoOut, cascade, folder):
 	index = 0
 	tagList = {}
 	while success:
-		cv2.imshow('src', frame)
+		#cv2.imshow('src', frame)
 		if(cv2.waitKey(wait) & 0xFF == ord('q')):
 			cv2.destroyAllWindows()
 			break
-		tagList[index] = []
 		tags = imageDetect(frame, faceCascade)
-		imageTag(index, folder, frame, tags)
+		if len(tags) > 0:
+			tags = imageTag(index, folder, frame, tags)
 		videoWriter.write(frame)
 		cv2.imshow('dest', frame)
-		tagList[index].append(tags)
+		if len(tags) > 0:
+			tagList[index] = tags
 		success, frame = videoCapture.read()
 		index += 1
 	return tagList
