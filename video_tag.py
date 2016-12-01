@@ -111,6 +111,7 @@ def videoDetectTag(videoIn, videoOut, cascade, folder):
 		videoWriter.write(frame)
 		cv2.imshow('dest', frame)
 		if len(tags) > 0:
+			print "find the roi: ", tags
 			tagList[index] = tags
 		success, frame = videoCapture.read()
 		index += 1
