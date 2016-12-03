@@ -5,6 +5,38 @@ from PIL import Image
 from optparse import OptionParser
 import cv2
 
+def cvConvertTo(srcFile, destFile, alpha, beta):
+	"""
+	图片反色 
+	"""
+	image = cv2.imread(srcFile)
+	dest = image.convertTo(image, -1, alpha, beta)
+	cv2.imwrite(destFile, dest)
+
+def cvConvertTo1(srcFile, destFile, alpha, beta):
+	"""
+	图片转换 
+	"""
+	image = cv2.imread(srcFile)
+	dest = cv.CreateImage((image.width, image.height), image.depth, image.nChannels)
+	for i in range(image.height):
+		for j in range(image.width):
+			for m in range(3):
+				dest[i,j][m] = alpha * image[i,j][m] + beta
+	cv2.imwrite(destFile, dest)
+
+def reverse(srcFile, destFile):
+	"""
+	图片反色 
+	"""
+	image = cv2.imread(srcFile)
+	dest = cv.CreateImage((image.width, image.height), image.depth, image.nChannels)
+	for i in range(image.height):
+		for j in range(image.width):
+			#dest[i,j] = 255 - image[i,j]
+			dest[i,j] = (255 - image[i,j][0], 255 - image[i,j][1], 255 - image[i,j][2])
+	cv2.imwrite(destFile, dest)
+
 def filter2D(srcFile, destFile):
 	"""
 	将和模板放在图像的一个像素A上，求与之对应的图像上的每个像素点的和，核不同，得到的结果不同，而滤波的使用核心也是对于这个核模板的使用，需要注意的是，该滤波函数是单通道运算的，也就是说对于彩色图像的滤波，需要将彩色图像的各个通道提取出来，对各个通道分别滤波才行。 
